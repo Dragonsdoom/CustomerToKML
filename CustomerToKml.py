@@ -159,7 +159,9 @@ def sanitizeCreds(creds):
 
 def buildQuery():
     # get active customers with addresses
-    raise RuntimeError, "Database query removed to preserve proprietary business information. Please replace this with your own query."
+    raise RuntimeError,"""Database query removed to preserve proprietary
+                            business information.
+                            Please replace this with your own query."""
 
 def connectToSQLServer():
     # get credentials for database and geocoding
