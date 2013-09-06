@@ -255,10 +255,10 @@ def main():
         logging.warning("Error while writing to file: " + str(e))
         root.destroy()
         sys.exit()
-	finally:
-		logging.info('Closing file IO and destroying gui..')
-		filename.close()
-		root.destroy()
+    finally:
+        logging.info('Closing file IO and destroying gui..')
+        filename.close()
+        root.destroy()
 
     # close connection to DB
     logging.info('Closing connection to database..')
