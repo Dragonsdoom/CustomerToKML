@@ -158,10 +158,24 @@ def sanitizeCreds(creds):
     return creds
 
 def buildQuery():
-    # get active customers with addresses
-    raise RuntimeError,"""Database query removed to preserve proprietary
-                            business information.
-                            Please replace this with your own query."""
+    return """SELECT [AddressId]
+    ,[Company].[Name]
+    ,[Company].[Description]
+    ,[AddressLine1]
+    ,[AddressLine2]
+    ,[City]
+    ,[PostalCode]
+    ,[AddressTypeId]
+    ,[CountryRegionId]
+    ,[StateProvinceId]
+    FROM [Titan].[Address]
+    INNER JOIN [Titan].[Company]
+    ON [Titan].[Company].[DefaultAddressId]=
+    Titan.Address.AddressId
+    WHERE [Titan].[Company].[CompanyId] IN (
+    SELECT [CustomerId]
+    FROM [Titan].[Customer]
+    WHERE [Titan].[Customer].[Active] = 1)"""
 
 def connectToSQLServer():
     # get credentials for database and geocoding
@@ -187,9 +201,74 @@ def executeSQLQuery(cursor, qStatement):
         sys.exit()
     return cursor
 
+def serializeKML(root):
+    logging.info('Serializing KML in memory..')
+    try:
+        return etree.tostring(root,encoding="UTF-8",
+                                      method="xml",
+                                      xml_declaration=True,
+                                      pretty_print=True)
+    except Exception, e:
+        logging.warning("Error while serializing addresses: " + str(e))
+        sys.exit()
+
+def writeToFileWithGUIPrompt(data):
+    logging.info('Requesting save location from user..')
+    root = Tk.Tk()
+    root.withdraw() # hides the root window
+
+    try:
+        filename = tkAskSaveAsFile(parent=root,
+                                   defaultextension='.kml',
+                                   filetypes=[('Google Earth KML','*.kml')],
+                                   title="Save the file as...")
+        logging.info('Writing to file..')
+        filename.write(data)
+    except IOError, e:
+        logging.warning("Error while writing to file: " + str(e))
+        root.destroy()
+        sys.exit()
+    finally:
+        logging.info('Closing file IO and destroying gui..')
+        filename.close()
+        root.destroy()
+
+def closeDBConnection(connection):
+    logging.info('Closing connection to database..')
+    try:
+        connection.close()
+    except Exception, e:
+        logging.warning("Error while writing to file: " + str(e))
+        sys.exit()
+
+def buildAddressFromRow(row):
+    logging.info('Fetching row from cursor..')
+    address = (str(row.AddressLine1) +
+    ', ' + str(row.City) +
+    ', ' + str(row.StateProvinceId) +
+    ' ' + str(row.PostalCode) +
+    ', ' + str(row.CountryRegionId))
+    return address
+
+def buildCustomerNameFromRow(row):
+    return str(row.Name)
+
+def waitToAvoidOverflowingGeocoder(seconds):
+    logging.info('Waiting to geocode next address (~' + str(seconds) +
+                     's)..')
+    sleep(seconds) # Don't overflow Google's geocoder
+
+def buildListFromCursor(cursor):
+    rowList = []
+    for row in cursor.fetchall():
+        address = buildAddressFromRow(row)
+        custName = buildCustomerNameFromRow(row)
+        rowList.append((address,custName))
+    return rowList
+
 def main():
     initLogging()
-       
+      
     cursor = connectToSQLServer()
     logging.info('Building query..')
     qStatement = buildQuery()
@@ -203,71 +282,22 @@ def main():
     doc = etree.Element('Document')
     root.append(doc)
 
-    # read data from query and generate XML tree
-    address = ''
-    for row in cursor.fetchall():
-        logging.info('Fetching row from cursor..')
-        address = (str(row.AddressLine1) +
-        ', ' + str(row.City) +
-        ', ' + str(row.StateProvince) +
-        ' ' + str(row.PostalCode) +
-        ', ' + str(row.CountryRegion))
-        
-        custName = str(row.Name)
+    rowList = buildListFromCursor(cursor)
+    #need customer name, address here independent of implementation
+    for r in rowList:
         logging.info('Geocoding address..')
         try:
-            addressGCode = geocode(address)
+            addressGCode = geocode(r[0])
         except Exception, e:
             logging.warning("Error while geocoding address: " + str(e))
             sys.exit()
         logging.info('Appending row to kml..')
-        doc.append(placemark(custName, address, addressGCode))
+        doc.append(placemark(r[1], r[0], addressGCode))
+        waitToAvoidOverflowingGeocoder(10)
 
-        waitSecs = 10
-        logging.info('Waiting to geocode next address (~' + str(waitSecs) +
-                     's)..')
-        sleep(waitSecs) # Don't overflow Google's geocoder
-
-    # serialize XML
-    logging.info('Serializing KML in memory..')
-    try:
-        serialOutput = etree.tostring(root,encoding="UTF-8",
-                                      method="xml",
-                                      xml_declaration=True,
-                                      pretty_print=True)
-    except Exception, e:
-        logging.warning("Error while serializing addresses: " + str(e))
-        sys.exit()
-
-    # begin write to file
-    logging.info('Requesting save location from user..')
-    root = Tk.Tk()
-    root.withdraw() # hides the root window
-
-    try:
-        filename = tkAskSaveAsFile(parent=root,
-                                   defaultextension='.kml',
-                                   filetypes=[('Google Earth KML','*.kml')],
-                                   title="Save the file as...")
-        logging.info('Writing to file..')
-        filename.write(serialOutput)
-    except IOError, e:
-        logging.warning("Error while writing to file: " + str(e))
-        root.destroy()
-        sys.exit()
-    finally:
-        logging.info('Closing file IO and destroying gui..')
-        filename.close()
-        root.destroy()
-
-    # close connection to DB
-    logging.info('Closing connection to database..')
-    try:
-        connection.close()
-    except Exception, e:
-        logging.warning("Error while writing to file: " + str(e))
-        sys.exit()		
-
+    writeToFileWithGUIPrompt(serializeKML(root))		
+    closeDBConnection(cursor.connection)
+        
     # end program
     logging.info('..Done')
     sys.exit()
