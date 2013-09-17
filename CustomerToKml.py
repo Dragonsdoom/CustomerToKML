@@ -11,6 +11,7 @@ import logging
 import Tkinter as Tk
 import string as strModule
 from tkFileDialog import asksaveasfile as tkAskSaveAsFile
+from tkFileDialog import askopenfilename as tkAskOpenFileName
 from lxml import etree
 from time import sleep
 from datetime import date
@@ -66,32 +67,31 @@ def guiLabelEntryPair(master,displayText,mask='',s=Tk.TOP):
     pEntry.pack(side=s)
     return (pLabel, pEntry)
 
-def createGUIMaster(title,geometry):
+def createGUIMaster(title):
     """
     This func creates and initalizes the tkinter GUI master object,
     then returns it
     """
     master = Tk.Tk()
     master.title(title)
-    master.geometry(geometry)
+    #master.geometry(geometry)
     master.lift()
     return master
 
-def getCreds():
+def getCreds(guiMaster):
     """
     This func queries the user for database and geocoding credentials
     and returns a list of credentials
     """
-    master = createGUIMaster('CustomerToKML','200x200')
 
     uiPairs = {}
-    uiPairs['Server Name'] = guiLabelEntryPair(master,
+    uiPairs['Server Name'] = guiLabelEntryPair(guiMaster,
                                 "Enter server name: ")
-    uiPairs['Database Name'] = guiLabelEntryPair(master,
+    uiPairs['Database Name'] = guiLabelEntryPair(guiMaster,
                                 "Enter database name: ")
-    uiPairs['Database User Name'] = guiLabelEntryPair(master,
+    uiPairs['Database User Name'] = guiLabelEntryPair(guiMaster,
                                 "Enter database user name: ")
-    uiPairs['Database Password'] = guiLabelEntryPair(master,
+    uiPairs['Database Password'] = guiLabelEntryPair(guiMaster,
                                 "Enter database password: ", '*')
     uiPairs['Server Name'][1].focus()
 
@@ -99,9 +99,8 @@ def getCreds():
     def callback():
         for x in uiPairs.keys():
             credentials[x] = uiPairs[x][1].get()
-        master.destroy()
 
-    button = Tk.Button(master, text="Ok", command=callback)
+    button = Tk.Button(guiMaster, text="Ok", command=callback)
     button.pack(side=Tk.BOTTOM)
     Tk.mainloop()
     return credentials
@@ -115,20 +114,6 @@ def initLogging():
     logging.basicConfig(filename='CustomerToKml ' + d.strftime('%m %d %y') +
                         '.log', level=logging.DEBUG)
     logging.info('Beginning run log for program..')
-
-def connectToMSSQL(server,database,uid,pwd):
-    """
-    This func connects to MSSQL using the arguments provided and returns the
-    connection object
-    """
-    try:
-        connStr = ('driver={SQL Server};server=' + server + ';database=' +
-        database + ';uid=' + uid + ';pwd=' + pwd)
-        connection = pyodbc.connect(connStr)
-    except Exception, e:
-        logging.warning("Error while connecting to database: " + str(e))
-        sys.exit()
-    return connection
 
 def sanitizeStr(dirtyStr, cleanChars):
     """
@@ -156,50 +141,6 @@ def sanitizeCreds(creds):
         creds['Database Password'],
         strModule.printable)
     return creds
-
-def buildQuery():
-    return """SELECT [AddressId]
-    ,[Company].[Name]
-    ,[Company].[Description]
-    ,[AddressLine1]
-    ,[AddressLine2]
-    ,[City]
-    ,[PostalCode]
-    ,[AddressTypeId]
-    ,[CountryRegionId]
-    ,[StateProvinceId]
-    FROM [Titan].[Address]
-    INNER JOIN [Titan].[Company]
-    ON [Titan].[Company].[DefaultAddressId]=
-    Titan.Address.AddressId
-    WHERE [Titan].[Company].[CompanyId] IN (
-    SELECT [CustomerId]
-    FROM [Titan].[Customer]
-    WHERE [Titan].[Customer].[Active] = 1)"""
-
-def connectToSQLServer():
-    # get credentials for database and geocoding
-    logging.info('Requesting credentials..')
-    creds = sanitizeCreds(getCreds())
-
-    # open database connection
-    # https://code.google.com/p/pyodbc/wiki/GettingStarted
-    logging.info('Opening connection to database..')
-    connection = connectToMSSQL(creds['Server Name'],
-                                creds['Database Name'],
-                                creds['Database User Name'],
-                                creds['Database Password'])
-    cursor = connection.cursor()
-    return cursor
-
-def executeSQLQuery(cursor, qStatement):
-    logging.info('Executing query..')
-    try:
-        cursor.execute(qStatement)
-    except Exception, e:
-        logging.warning("Error while querying database: " + str(e))
-        sys.exit()
-    return cursor
 
 def serializeKML(root):
     logging.info('Serializing KML in memory..')
@@ -233,74 +174,203 @@ def writeToFileWithGUIPrompt(data):
         filename.close()
         root.destroy()
 
-def closeDBConnection(connection):
-    logging.info('Closing connection to database..')
-    try:
-        connection.close()
-    except Exception, e:
-        logging.warning("Error while writing to file: " + str(e))
-        sys.exit()
-
-def buildAddressFromRow(row):
-    logging.info('Fetching row from cursor..')
-    address = (str(row.AddressLine1) +
-    ', ' + str(row.City) +
-    ', ' + str(row.StateProvinceId) +
-    ' ' + str(row.PostalCode) +
-    ', ' + str(row.CountryRegionId))
-    return address
-
-def buildCustomerNameFromRow(row):
-    return str(row.Name)
-
 def waitToAvoidOverflowingGeocoder(seconds):
     logging.info('Waiting to geocode next address (~' + str(seconds) +
                      's)..')
     sleep(seconds) # Don't overflow Google's geocoder
 
-def buildListFromCursor(cursor):
-    rowList = []
-    for row in cursor.fetchall():
-        address = buildAddressFromRow(row)
-        custName = buildCustomerNameFromRow(row)
-        rowList.append((address,custName))
-    return rowList
+class dao():
+    def __init__(self):
+        pass
+    def prepare(self):
+        pass
+    def connect(self):
+        pass
+    def query(self):
+        pass
+    def get(self):
+        pass
+    def close(self):
+        pass
 
-def main():
-    initLogging()
-      
-    cursor = connectToSQLServer()
-    logging.info('Building query..')
-    qStatement = buildQuery()
-    cursor = executeSQLQuery(cursor, qStatement)
+class mssqldao(dao):
+    connected = False
+    connStr = ''
+    statement = ''
+    results = {}
 
-    # building root nodes
-    # http://lxml.de/tutorial.html
-    # https://developers.google.com/kml/documentation/kml_tut
-    logging.info('Building kml in memory..')
-    root = etree.Element('kml', xmlns='http://www.opengis.net/kml/2.2')
-    doc = etree.Element('Document')
-    root.append(doc)
+    def __init__(self,server,database,uid,pwd):
+        self.connStr = ('driver={SQL Server};server=' + server + ';database=' +
+        database + ';uid=' + uid + ';pwd=' + pwd)
+        self.statement = self.prepare()
+    
+    def prepare(self):
+        return """SELECT Company.Name
+        ,Company.Description
+        ,AddressLine1
+        ,AddressLine2
+        ,City
+        ,PostalCode
+        ,CountryRegion.Name AS CountryRegion
+        ,StateProvince.Name AS StateProvince
+        FROM Titan.Titan.Address 
+        INNER JOIN Titan.Titan.Company 
+			ON Titan.Titan.Company.DefaultAddressId=Titan.Titan.Address.AddressId
+		INNER JOIN Titan.Titan.StateProvince ON Address.StateProvinceId = StateProvince.StateProvinceId
+		INNER JOIN Titan.Titan.CountryRegion ON Address.CountryRegionId = CountryRegion.CountryRegionId
+        WHERE Titan.Titan.Company.CompanyId IN (
+			SELECT Titan.Titan.Customer.CustomerId
+			FROM Titan.Titan.Customer
+			WHERE Titan.Titan.Customer.Active = 1)"""
 
-    rowList = buildListFromCursor(cursor)
-    #need customer name, address here independent of implementation
-    for r in rowList:
+    def connect(self):
+        if self.connStr:
+            # open database connection
+            # https://code.google.com/p/pyodbc/wiki/GettingStarted
+            logging.info('Opening connection to database..')
+            try:
+                self.connection = pyodbc.connect(self.connStr)
+            except Exception, e:
+                logging.warning("Error while connecting to database: " + str(e))
+                sys.exit()
+            self.cursor = self.connection.cursor()
+            self.connected=True
+            return True
+        else:
+            return False
+
+    def query(self):
+        if self.cursor and self.query:
+            self.results = {}
+            logging.info('Executing query..')
+            try:
+                self.cursor.execute(self.statement)
+            except Exception, e:
+                logging.warning("Error while querying database: " + str(e))
+                sys.exit()
+            rows = self.cursor.fetchall()
+            cols = []
+            #get cols from cursor
+            for x in range(0,len(self.cursor.description)):
+                cols.append(self.cursor.description[x][0])
+            #set up lists in result dict
+            for col in cols:    
+                self.results[col] = []
+            #add results to lists in dict by column
+            for x in range(0,len(rows)):
+                for y in range(0, len(cols)):
+                    self.results[cols[y]].append(rows[x][y])
+            return True
+        else:
+            return False
+
+    def get(self):
+        if self.results:
+            return self.results
+        else:
+            raise ValueError
+    
+    def close(self):
+        if self.connection:
+            logging.info('Closing connection to database..')
+            try:
+                self.connection.close()
+            except Exception, e:
+                logging.warning("Error while writing to file: " + str(e))
+                sys.exit()
+            self.connected = False
+            return True
+        else:
+            return False
+
+def buildAddressesByCustomer(rDict):
+    custAddresses = {}
+    for x in range(0,len(rDict['Name'])):
+        address = (str(rDict['AddressLine1'][x])
+               + ', ' + str(rDict['City'][x])
+               + ', ' + str(rDict['StateProvince'][x])
+               + ' ' + str(rDict['PostalCode'][x])
+               + ', ' + str(rDict['CountryRegion'][x]))
+        custName = rDict['Name'][x]
+        custAddresses[custName] = address
+        
+    return custAddresses
+
+def importFromExcel(master):
+    tkAskOpenFileName()
+    master.destroy()
+
+def importFromDatabase(master,sName,dbName,uName,uPass):
+    master.destroy()
+    
+    dao = mssqldao(sName,dbName,uName,uPass)
+    if dao.connect():
+        dao.query()
+        dao.close()
+    resultDict = dao.get()
+    
+    handleGeocodingLogic(buildAddressesByCustomer(resultDict))
+
+def handleGeocodingLogic(custAddr):
+    rootE = initKML()
+    custAddresses = custAddr
+    #geocode addresses
+    for k,v in custAddresses.items():
         logging.info('Geocoding address..')
         try:
-            addressGCode = geocode(r[0])
+            addressGCode = geocode(v)
         except Exception, e:
             logging.warning("Error while geocoding address: " + str(e))
             sys.exit()
         logging.info('Appending row to kml..')
-        doc.append(placemark(r[1], r[0], addressGCode))
+        rootE[0].append(placemark(v, k, addressGCode))
         waitToAvoidOverflowingGeocoder(10)
 
-    writeToFileWithGUIPrompt(serializeKML(root))		
-    closeDBConnection(cursor.connection)
+    writeToFileWithGUIPrompt(serializeKML(rootE))
         
     # end program
     logging.info('..Done')
     sys.exit()
+
+def initKML():
+    # building root nodes
+    # http://lxml.de/tutorial.html
+    # https://developers.google.com/kml/documentation/kml_tut
+    logging.info('Building kml in memory..')
+    rootE = etree.Element('kml', xmlns='http://www.opengis.net/kml/2.2')
+    doc = etree.Element('Document')
+    rootE.append(doc)
+    return rootE
+
+def main():
+    initLogging()
+    master = createGUIMaster('CustomerToKML')
+    uiPairs = {}
+    uiPairs['Server Name'] = guiLabelEntryPair(master,
+                                "Enter server name: ")
+    uiPairs['Database Name'] = guiLabelEntryPair(master,
+                                "Enter database name: ")
+    uiPairs['Database User Name'] = guiLabelEntryPair(master,
+                                "Enter database user name: ")
+    uiPairs['Database Password'] = guiLabelEntryPair(master,
+                                "Enter database password: ", '*')
+    uiPairs['Server Name'][1].focus()
+
+    def impExCallback():
+        importFromExcel(master)
+
+    def impDBCallback():
+        creds = {}
+        for x in uiPairs.keys():
+            creds[x] = uiPairs[x][1].get()
+        importFromDatabase(master, creds['Server Name'],creds['Database Name'],creds['Database User Name'],creds['Database Password'])
+    
+    impButtonDB = Tk.Button(master,text="Import From Database", command=impDBCallback)
+    impButtonDB.pack()
+    impButtonXLS = Tk.Button(master,text="Import From Excel", command=impExCallback)
+    impButtonXLS.pack()
+
+    master.mainloop()
 
 # run program
 if __name__ == "__main__":
