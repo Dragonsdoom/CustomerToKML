@@ -1,51 +1,61 @@
+"""Handle logic calls between the view and the model."""
 import sys
 import logging
 from datetime import date
-from customertokml import ctkModel as model
-from tkview import tkview as view
+from .customertokml import ctkModel
+from .tkview import tkview as view
 
-class controller():
-    def __init__(self,model):
-        self.startLog()
+
+class Controller(object):
+
+    """Handle logic calls between the view and the model."""
+
+    def __init__(self, model):
+        self.start_log()
         self.model = model
-        self.view = view('Customer To KML',self,self.model)
-        self.view.link(self.importDatabaseData,self.importExcelData)
+        self.view = view('Customer To KML', self, self.model)
+        self.view.link(self.import_database_data, self.import_excel_data)
 
     def display(self):
+        """Display the GUI."""
         self.view.mainloop()
-        
-    def startLog(self):
+
+    def start_log(self):
         """
-        This func initializes the logging activity
+        Initialize the logging activity.
         """
         # begin logging program activity to file
-        d = date.today()
-        logging.basicConfig(filename='CustomerToKml ' + d.strftime('%m %d %y') +
+        today = date.today()
+        logging.basicConfig(filename='CustomerToKml '
+                            + today.strftime('%m %d %y') +
                             '.log', level=logging.DEBUG)
         logging.info('Beginning run log for program..')
 
-    def importDatabaseData(self):
+    def import_database_data(self):
+        """Import data from database connection in model."""
         self.view.hide()
         self.model.importFromDatabase(self.view.getServerName(),
-                                 self.view.getDBName(),
-                                 self.view.getUserName(),
-                                 self.view.getDBPassword())
-        
-    def importExcelData(self):
+                                      self.view.getDBName(),
+                                      self.view.getUserName(),
+                                      self.view.getDBPassword())
+
+    def import_excel_data(self):
+        """Import data from Excel."""
         self.view.hide()
-        self.model.importFromExcel()           
+        self.model.importFromExcel()
 
     def end(self):
+        """End the program."""
         logging.info('..Done')
         logging.shutdown()
         sys.exit()
 
-# starting function
+
 def main():
-    ctr = controller(model())
+    """Enter the program"""
+    ctr = Controller(ctkModel())
     ctr.display()
     ctr.end()
 
-# entry point
 if __name__ == "__main__":
     main()
