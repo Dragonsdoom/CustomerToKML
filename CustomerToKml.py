@@ -12,21 +12,10 @@ import string as strModule
 from tkFileDialog import asksaveasfile as tkAskSaveAsFile
 from tkFileDialog import askopenfilename as tkAskOpenFileName
 from time import sleep
-from datetime import date
 from geocode import geocode
 from dao import mssqldao
 from kml import kml
 from tkview import tkview
-
-def initLogging():
-    """
-    This func initializes the logging activity
-    """
-    # begin logging program activity to file
-    d = date.today()
-    logging.basicConfig(filename='CustomerToKml ' + d.strftime('%m %d %y') +
-                        '.log', level=logging.DEBUG)
-    logging.info('Beginning run log for program..')
 
 def waitToAvoidOverflowingGeocoder(seconds):
     logging.info('Waiting to geocode next address (~' + str(seconds) +
@@ -77,15 +66,8 @@ def handleGeocodingLogic(custAddr):
         waitToAvoidOverflowingGeocoder(10)
 
     write(kml.serializeKML(rootE),'*.kml','Google Earth KML')
-        
-    # end program
-    logging.info('..Done')
-    sys.exit()
 
 def main():
-    initLogging()
-    gui = tkview('Customer To KML',None,None)
-
     def impExCallback():
         importFromExcel(master)
 
@@ -94,9 +76,3 @@ def main():
         for x in uiPairs.keys():
             creds[x] = uiPairs[x][1].get()
         importFromDatabase(master, creds['Server Name'],creds['Database Name'],creds['Database User Name'],creds['Database Password'])
-
-    gui.mainloop()
-
-# run program
-if __name__ == "__main__":
-    main()
