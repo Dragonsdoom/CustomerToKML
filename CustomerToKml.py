@@ -17,62 +17,62 @@ from dao import mssqldao
 from kml import kml
 from tkview import tkview
 
-def waitToAvoidOverflowingGeocoder(seconds):
-    logging.info('Waiting to geocode next address (~' + str(seconds) +
-                     's)..')
-    sleep(seconds) # Don't overflow Google's geocoder
+class ctkModel():
+    subscribers = []        
+    def addSubscriber(self,subs):
+        self.subscribers.append(subs)
 
-def buildAddressesByCustomer(rDict):
-    custAddresses = {}
-    for x in range(0,len(rDict['Name'])):
-        address = (str(rDict['AddressLine1'][x])
-               + ', ' + str(rDict['City'][x])
-               + ', ' + str(rDict['StateProvince'][x])
-               + ' ' + str(rDict['PostalCode'][x])
-               + ', ' + str(rDict['CountryRegion'][x]))
-        custName = rDict['Name'][x]
-        custAddresses[custName] = address
+    def removeSubscriber(self,subs):
+        self.subscribers.remove(subs)
+
+    def notifySubscribers(self):
+        for s in self.subscribers:
+            pass
         
-    return custAddresses
+    def waitToAvoidOverflowingGeocoder(self,seconds):
+        logging.info('Waiting to geocode next address (~' + str(seconds) +
+                         's)..')
+        sleep(seconds) # Don't overflow geocoder
 
-def importFromExcel(master):
-    tkAskOpenFileName()
-    master.destroy()
+    def buildCustomerAddressesDict(self,addrComponentDict):
+        custAddresses = {}
+        for x in range(0,len(addrComponentDict['Name'])):
+            address = (str(addrComponentDict['AddressLine1'][x])
+                   + ', ' + str(addrComponentDict['City'][x])
+                   + ', ' + str(addrComponentDict['StateProvince'][x])
+                   + ' ' + str(addrComponentDict['PostalCode'][x])
+                   + ', ' + str(addrComponentDict['CountryRegion'][x]))
+            custName = addrComponentDict['Name'][x]
+            custAddresses[custName] = address
+            
+        return custAddresses
 
-def importFromDatabase(master,sName,dbName,uName,uPass):
-    master.destroy()
-    
-    dao = mssqldao(sName,dbName,uName,uPass)
-    if dao.connect():
-        dao.query()
-        dao.close()
-    resultDict = dao.get()
-    
-    handleGeocodingLogic(buildAddressesByCustomer(resultDict))
+    def importFromExcel(self,master):
+        #tkAskOpenFileName()
+        pass
 
-def handleGeocodingLogic(custAddr):
-    rootE = kml.initKML()
-    custAddresses = custAddr
-    #geocode addresses
-    for k,v in custAddresses.items():
-        logging.info('Geocoding address..')
-        try:
-            addressGCode = geocode(v)
-        except Exception, e:
-            logging.warning("Error while geocoding address: " + str(e))
-            sys.exit()
-        logging.info('Appending row to kml..')
-        rootE[0].append(kml.placemark(v, k, addressGCode))
-        waitToAvoidOverflowingGeocoder(10)
+    def importFromDatabase(self,sName,dbName,uName,uPass):      
+        dao = mssqldao(sName,dbName,uName,uPass)
+        if dao.connect():
+            dao.query()
+            dao.close()
+        resultDict = dao.get()
+        
+        handleGeocodingLogic(buildAddressesByCustomer(resultDict))
 
-    write(kml.serializeKML(rootE),'*.kml','Google Earth KML')
+    def handleGeocodingLogic(self,custAddr):
+        rootE = kml.initKML()
+        custAddresses = custAddr
+        #geocode addresses
+        for k,v in custAddresses.items():
+            logging.info('Geocoding address..')
+            try:
+                addressGCode = geocode(v)
+            except Exception, e:
+                logging.warning("Error while geocoding address: " + str(e))
+                sys.exit()
+            logging.info('Appending row to kml..')
+            rootE[0].append(kml.placemark(v, k, addressGCode))
+            waitToAvoidOverflowingGeocoder(10)
 
-def main():
-    def impExCallback():
-        importFromExcel(master)
-
-    def impDBCallback():
-        creds = {}
-        for x in uiPairs.keys():
-            creds[x] = uiPairs[x][1].get()
-        importFromDatabase(master, creds['Server Name'],creds['Database Name'],creds['Database User Name'],creds['Database Password'])
+        write(kml.serializeKML(rootE),'*.kml','Google Earth KML')

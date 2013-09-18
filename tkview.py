@@ -9,7 +9,7 @@ class tkview():
     def __init__(self,title,controller,model):
         self.controller = controller
         self.model = model
-        #model.addSubscriber(self)
+        model.addSubscriber(self)
 
         self.root.resizable(0,0)
         self.root.title(title)
@@ -41,6 +41,24 @@ class tkview():
         importButtonXLS = ttk.Button(self.root,text="Import From Excel", command=None)
         importButtonXLS.grid(row=10, column=0, sticky=tk.W+tk.E+tk.N+tk.S, padx=5, pady=3)
 
+        self.serverNameLabel = serverNameLabel
+        self.serverNameEntry = serverNameEntry
+        self.userNameLabel = userNameLabel
+        self.userNameEntry = userNameEntry
+        self.dbNameLabel = dbNameLabel
+        self.dbNameEntry = dbNameEntry
+        self.dbpwLabel = dbpwLabel
+        self.dbpwEntry = dbpwEntry
+        self.importButtonDB = importButtonDB
+        self.importButtonXLS = importButtonXLS
+
+    def link(self,importDBCommand,importXLSCommand):
+        self.importButtonDB.config(command=importDBCommand)
+        self.importButtonXLS.config(command=importXLSCommand)
+
+    def hide(self):
+        self.root.withdraw()
+    
     def write(self,data,extension,extDescription):
         logging.info('Requesting save location from user..')
         self.root.withdraw() # hides the root window
@@ -59,6 +77,16 @@ class tkview():
         finally:
             logging.info('Closing file IO and destroying gui..')
             filename.close()
+      
+    def getServerName(self):
+        return self.serverNameEntry.get()
+    def getDBName(self):
+        return self.dbNameEntry.get()
+    def getUserName(self):
+        return self.userNameEntry.get()
+    def getDBPassword(self):
+        return self.dbpwEntry.get()
+        
             
     def mainloop(self):
         tk.mainloop()
