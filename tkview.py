@@ -13,7 +13,7 @@ class Tkview(object):
     def __init__(self, title, controller, model):
         self.controller = controller
         self.model = model
-        model.addSubscriber(self)
+        model.addsub(self)
 
         self.root.resizable(0, 0)
         self.root.title(title)

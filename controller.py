@@ -2,12 +2,11 @@
 import sys
 import logging
 from datetime import date
-from .customertokml import ctkModel
-from .tkview import tkview as view
+from customertokml import CtkModel as model
+from tkview import Tkview as view
 
 
 class Controller(object):
-
     """Handle logic calls between the view and the model."""
 
     def __init__(self, model):
@@ -34,15 +33,15 @@ class Controller(object):
     def import_database_data(self):
         """Import data from database connection in model."""
         self.view.hide()
-        self.model.importFromDatabase(self.view.getServerName(),
-                                      self.view.getDBName(),
-                                      self.view.getUserName(),
-                                      self.view.getDBPassword())
+        self.model.dbimport(self.view.get_servername(),
+                                      self.view.get_dbname(),
+                                      self.view.get_username(),
+                                      self.view.get_dbpassword())
 
     def import_excel_data(self):
         """Import data from Excel."""
         self.view.hide()
-        self.model.importFromExcel()
+        self.model.xlsimport()
 
     def end(self):
         """End the program."""
@@ -53,7 +52,7 @@ class Controller(object):
 
 def main():
     """Enter the program"""
-    ctr = Controller(ctkModel())
+    ctr = Controller(model())
     ctr.display()
     ctr.end()
 

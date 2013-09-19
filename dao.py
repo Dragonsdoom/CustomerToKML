@@ -43,7 +43,7 @@ class MSSQLDAO(DAO):
     results = {}
 
     def __init__(self, server, database, uid, pwd):
-        DAO.__init__()
+        DAO.__init__(self)
         self.connstr = ('driver={SQL Server};server=' + server + ';database=' +
                         database + ';uid=' + uid + ';pwd=' + pwd)
         self.statement = self.prepare()

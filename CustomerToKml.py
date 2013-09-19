@@ -7,72 +7,65 @@ geocodes them with Google's geocode API, and stores them in KML format.
 
 import sys
 import logging
-import Tkinter as Tk
 import string as strModule
-from tkFileDialog import asksaveasfile as tkAskSaveAsFile
-from tkFileDialog import askopenfilename as tkAskOpenFileName
 from time import sleep
 from geocode import geocode
-from dao import mssqldao
-from kml import kml
-from tkview import tkview
+from dao import MSSQLDAO as DAO
+from kml import KML
 
-class ctkModel():
+class CtkModel():
     subscribers = []        
-    def addSubscriber(self,subs):
+    def addsub(self, subs):
         self.subscribers.append(subs)
 
-    def removeSubscriber(self,subs):
+    def removesub(self):
         self.subscribers.remove(subs)
 
-    def notifySubscribers(self):
+    def notifysubswrite(self, data, extension, exten_desc):
         for s in self.subscribers:
-            pass
+            s.write(data, extension, exten_desc)
         
-    def waitToAvoidOverflowingGeocoder(self,seconds):
+    def wait(self,seconds):
+        """Avoid overflowing geocoder."""
         logging.info('Waiting to geocode next address (~' + str(seconds) +
                          's)..')
-        sleep(seconds) # Don't overflow geocoder
+        sleep(seconds)
 
-    def buildCustomerAddressesDict(self,addrComponentDict):
-        custAddresses = {}
-        for x in range(0,len(addrComponentDict['Name'])):
-            address = (str(addrComponentDict['AddressLine1'][x])
-                   + ', ' + str(addrComponentDict['City'][x])
-                   + ', ' + str(addrComponentDict['StateProvince'][x])
-                   + ' ' + str(addrComponentDict['PostalCode'][x])
-                   + ', ' + str(addrComponentDict['CountryRegion'][x]))
-            custName = addrComponentDict['Name'][x]
-            custAddresses[custName] = address
+    def build_cust_addresses_dict(self,addr_component_dict):
+        caddresses = {}
+        for x in range(0,len(addr_component_dict['Name'])):
+            address = (str(addr_component_dict['AddressLine1'][x])
+                   + ', ' + str(addr_component_dict['City'][x])
+                   + ', ' + str(addr_component_dict['StateProvince'][x])
+                   + ' ' + str(addr_component_dict['PostalCode'][x])
+                   + ', ' + str(addr_component_dict['CountryRegion'][x]))
+            cname = addr_component_dict['Name'][x]
+            caddresses[cname] = address
             
-        return custAddresses
+        return caddresses
 
-    def importFromExcel(self,master):
+    def xlsimport(self):
         #tkAskOpenFileName()
         pass
 
-    def importFromDatabase(self,sName,dbName,uName,uPass):      
-        dao = mssqldao(sName,dbName,uName,uPass)
+    def dbimport(self,sName,dbName,uName,uPass):      
+        dao = DAO(sName,dbName,uName,uPass)
         if dao.connect():
             dao.query()
             dao.close()
-        resultDict = dao.get()
+        rdict = dao.get()
         
-        handleGeocodingLogic(buildAddressesByCustomer(resultDict))
+        self.geocode_cust_addresses(self.build_cust_addresses_dict(rdict))
 
-    def handleGeocodingLogic(self,custAddr):
-        rootE = kml.initKML()
-        custAddresses = custAddr
+    def geocode_cust_addresses(self,caddresses):
+        kml = KML()
+        xmlroot = kml.xmlroot
         #geocode addresses
-        for k,v in custAddresses.items():
+        for k,v in caddresses.items():
             logging.info('Geocoding address..')
-            try:
-                addressGCode = geocode(v)
-            except Exception, e:
-                logging.warning("Error while geocoding address: " + str(e))
-                sys.exit()
+            gcaddr = geocode(v)
             logging.info('Appending row to kml..')
-            rootE[0].append(kml.placemark(v, k, addressGCode))
-            waitToAvoidOverflowingGeocoder(10)
+            xmlroot[0].append(kml.placemark(v, k, gcaddr))
+            self.wait(10)
 
-        write(kml.serializeKML(rootE),'*.kml','Google Earth KML')
+        self.notifysubswrite(kml.serialize(xmlroot),'*.kml','Google Earth KML')

@@ -9,21 +9,14 @@ def geocode(address):
     geocode api and return either the value or (0,0).
     https://developers.google.com/kml/articles/geocodingforkml
     """
+
     mapsurl = ('http://maps.googleapis.com/maps/api/geocode/xml?address=' +
                address.replace(' ', '+') + '&sensor=false')
 
     coords = urllib.urlopen(mapsurl).read()
     root = etree.fromstring(coords)
-
     coordstr = (0, 0)
-    try:
-        coordstr = (
-            root.xpath('/GeocodeResponse/result/geometry/location/')[1],
-            root.xpath('/GeocodeResponse/result/geometry/location/')[0])
-        print coordstr
-    except IndexError as err:
-        logging.warning("Error while attempting to geocode address: " +
-                        str(err) + "\nwith address: " + str(address) +
-                        "\nCoordinates: " +
-                        str(coords))
+    loc = root.find(".//location")
+    if not loc is None:
+        coordstr = (loc[0].text, loc[1].text)
     return coordstr
