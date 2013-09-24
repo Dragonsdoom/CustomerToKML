@@ -7,7 +7,9 @@ from tkFileDialog import asksaveasfile, askopenfilename
 
 
 class Tkview(object):
+
     """Perform all tasks related to GUI."""
+    
     root = tk.Tk()
 
     def __init__(self, title, controller, model):
@@ -21,41 +23,42 @@ class Tkview(object):
 
         servername_label = ttk.Label(self.root, text="Enter server name: ")
         servername_label.grid(row=0, column=0,
-                             sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
+                              sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
         servername_entry = ttk.Entry(self.root)
         servername_entry.grid(row=1, column=0,
-                             sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
+                              sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
         servername_entry.focus()
 
         dbname_label = ttk.Label(self.root, text="Enter database name: ")
         dbname_label.grid(row=3, column=0,
-                         sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
+                          sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
         dbname_entry = ttk.Entry(self.root)
         dbname_entry.grid(row=4, column=0,
-                         sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
+                          sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
 
-        username_label = ttk.Label(self.root, text="Enter database user name: ")
+        username_label = ttk.Label(
+            self.root, text="Enter database user name: ")
         username_label.grid(row=5, column=0,
-                           sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
+                            sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
         username_entry = ttk.Entry(self.root)
         username_entry.grid(row=6, column=0,
-                           sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
+                            sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
 
         dbpw_label = ttk.Label(self.root, text="Enter database password: ")
         dbpw_label.grid(row=7, column=0,
-                       sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
+                        sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
         dbpw_entry = ttk.Entry(self.root, show='*')
         dbpw_entry.grid(row=8, column=0,
-                       sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
+                        sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
 
         dbimport_button = ttk.Button(self.root,
-                                    text="Import From Database", command=None)
+                                     text="Import From Database", command=None)
         dbimport_button.grid(row=9, column=0,
-                            sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
-        xlsimport_button = ttk.Button(self.root,
-                                     text="Import From Excel", command=None)
-        xlsimport_button.grid(row=10, column=0,
                              sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
+        xlsimport_button = ttk.Button(self.root,
+                                      text="Import From Excel", command=None)
+        xlsimport_button.grid(row=10, column=0,
+                              sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
 
         self.servername_label = servername_label
         self.servername_entry = servername_entry
@@ -84,9 +87,9 @@ class Tkview(object):
 
         try:
             filename = asksaveasfile(parent=self.root,
-                                       defaultextension=extension,
-                                       filetypes=[(exten_desc, extension)],
-                                       title="Save the file as...")
+                                     defaultextension=extension,
+                                     filetypes=[(exten_desc, extension)],
+                                     title="Save the file as...")
             logging.info('Writing to file..')
             filename.write(data)
         except IOError as err:
@@ -114,10 +117,11 @@ class Tkview(object):
         return self.dbpw_entry.get()
 
     def get_xlsfile(self):
+        """Get file from operator."""
         xls = askopenfilename(parent=self.root,
-                                       defaultextension='*.xls',
-                                       filetypes=[('Excel XLS file', '*.xls')],
-                                       title="Open XLS file...")
+                              defaultextension='*.xls',
+                              filetypes=[('Excel XLS file', '*.xls')],
+                              title="Open XLS file...")
         if xls:
             return xls
         else:

@@ -5,8 +5,9 @@ from lxml import etree
 
 
 class KML(object):
+
     """Generate KML files."""
-    
+
     def __init__(self):
         # building root nodes
         # http://lxml.de/tutorial.html
@@ -20,8 +21,8 @@ class KML(object):
     # builds a kml placemark and returns the node
     def placemark(self, cname, address, gcode):
         """
-        This func builds a placemark node structure for KML from params
-        and returns the node.
+        Build a placemark node structure for KML from params
+        and return the node.
         """
         pmark = etree.Element('Placemark')
         pmark.append(etree.Element('name'))

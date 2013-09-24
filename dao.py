@@ -35,6 +35,7 @@ class DAO(object):
 class MSSQLDAO(DAO):
 
     """Implement mssql DAO."""
+    
     connected = False
     connection = None
     cursor = None

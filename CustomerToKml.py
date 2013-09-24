@@ -14,38 +14,47 @@ from geocode import geocode
 from dao import MSSQLDAO as DAO
 from kml import KML
 
+
 class CtkModel(object):
-    subscribers = []        
+
+    """MVC Model for program."""
+    
+    subscribers = []
+
     def addsub(self, subs):
+        """Add subscriber - publisher/subscriber model"""
         self.subscribers.append(subs)
 
     def removesub(self):
+        """Remove subscriber - publisher/subscriber model"""
         self.subscribers.remove(subs)
 
     def notifysubswrite(self, data, extension, exten_desc):
+        """Notify subscribers of write to file."""
         for s in self.subscribers:
             s.write(data, extension, exten_desc)
-        
-    def wait(self,seconds):
+
+    def wait(self, seconds):
         """Avoid overflowing geocoder."""
         logging.info('Waiting to geocode next address (~' + str(seconds) +
-                         's)..')
+                     's)..')
         sleep(seconds)
 
-    def build_cust_addresses_dict(self,addr_component_dict):
+    def build_cust_addresses_dict(self, addr_component_dict):
+        """Build a dict of customer keys and address values"""
         caddresses = {}
-        for x in range(0,len(addr_component_dict['Name'])):
+        for x in range(0, len(addr_component_dict['Name'])):
             address = (str(addr_component_dict['AddressLine1'][x])
-                   + ', ' + str(addr_component_dict['City'][x])
-                   + ', ' + str(addr_component_dict['StateProvince'][x])
-                   + ' ' + str(addr_component_dict['PostalCode'][x])
-                   + ', ' + str(addr_component_dict['CountryRegion'][x]))
+                       + ', ' + str(addr_component_dict['City'][x])
+                       + ', ' + str(addr_component_dict['StateProvince'][x])
+                       + ' ' + str(addr_component_dict['PostalCode'][x])
+                       + ', ' + str(addr_component_dict['CountryRegion'][x]))
             cname = addr_component_dict['Name'][x]
             caddresses[cname] = address
-            
+
         return caddresses
 
-    def xlsparse(self,xls, sheet_index=0,header_row_index=0):
+    def xlsparse(self, xls, sheet_index=0, header_row_index=0):
         """
         Open a sheet of a book, read in the specific row as a header,
         and read in each column from that row down as data for that column.
@@ -54,26 +63,29 @@ class CtkModel(object):
         with xlrd.open_workbook(xls) as book:
             sheet = book.sheet_by_index(sheet_index)
         for index, cvalue in enumerate(sheet.row_values(header_row_index)):
-            data[cvalue] = sheet.col_values(index,header_row_index+1)
+            data[cvalue] = sheet.col_values(index, header_row_index + 1)
         return data
 
-    def dbimport(self,sName,dbName,uName,uPass):      
-        dao = DAO(sName,dbName,uName,uPass)
+    def dbimport(self, sname, dbname, uname, upass):
+        """Import data from db using DAO"""
+        dao = DAO(sname, dbname, uname, upass)
         if dao.connect():
             dao.query()
             dao.close()
         rdict = dao.get()
         return rdict
 
-    def geocode_cust_addresses(self,caddresses):
+    def geocode_cust_addresses(self, caddresses):
+        """Geocode all addresses from a customer dict."""
         kml = KML()
         xmlroot = kml.xmlroot
-        #geocode addresses
-        for k,v in caddresses.items():
+        # geocode addresses
+        for k, v in caddresses.items():
             logging.info('Geocoding address..')
             gcaddr = geocode(v)
             logging.info('Appending row to kml..')
             xmlroot[0].append(kml.placemark(v, k, gcaddr))
             self.wait(10)
 
-        self.notifysubswrite(kml.serialize(xmlroot),'*.kml','Google Earth KML')
+        self.notifysubswrite(
+            kml.serialize(xmlroot), '*.kml', 'Google Earth KML')

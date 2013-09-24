@@ -3,6 +3,7 @@ import logging
 import urllib
 from lxml import etree
 
+
 def geocode(address):
     """
     Take an address as a string for geocoding via Google's

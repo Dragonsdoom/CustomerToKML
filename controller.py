@@ -7,6 +7,7 @@ from tkview import Tkview as view
 
 
 class Controller(object):
+
     """Handle logic calls between the view and the model."""
 
     def __init__(self, model):
@@ -34,9 +35,9 @@ class Controller(object):
         """Import data from database connection in model."""
         self.view.hide()
         data = self.model.dbimport(self.view.get_servername(),
-                                      self.view.get_dbname(),
-                                      self.view.get_username(),
-                                      self.view.get_dbpassword())
+                                   self.view.get_dbname(),
+                                   self.view.get_username(),
+                                   self.view.get_dbpassword())
         caddresses = self.model.build_cust_addresses_dict(data)
         self.model.geocode_cust_addresses(caddresses)
         self.end()
@@ -49,7 +50,6 @@ class Controller(object):
         caddresses = self.model.build_cust_addresses_dict(data)
         self.model.geocode_cust_addresses(caddresses)
         self.end()
-        
 
     def end(self):
         """End the program."""
