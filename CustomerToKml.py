@@ -10,7 +10,6 @@ import logging
 import string as strmodule
 from time import sleep
 import xlrd
-from collections import OrderedDict
 from geocode import geocode
 from dao import MSSQLDAO as DAO
 from kml import KML
