@@ -3,7 +3,7 @@ import sys
 import logging
 import Tkinter as tk
 import ttk
-from tkFileDialog import asksaveasfile
+from tkFileDialog import asksaveasfile, askopenfilename
 
 
 class Tkview(object):
@@ -112,6 +112,16 @@ class Tkview(object):
     def get_dbpassword(self):
         """Get attribute."""
         return self.dbpw_entry.get()
+
+    def get_xlsfile(self):
+        xls = askopenfilename(parent=self.root,
+                                       defaultextension='*.xls',
+                                       filetypes=[('Excel XLS file', '*.xls')],
+                                       title="Open XLS file...")
+        if xls:
+            return xls
+        else:
+            raise TypeError
 
     def mainloop(self):
         """Draw the GUI while listening for events."""

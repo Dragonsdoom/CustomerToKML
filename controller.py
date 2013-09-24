@@ -41,7 +41,8 @@ class Controller(object):
     def import_excel_data(self):
         """Import data from Excel."""
         self.view.hide()
-        self.model.xlsimport()
+        xls = self.view.get_xlsfile()
+        self.model.xlsparse(xls)
 
     def end(self):
         """End the program."""

@@ -7,13 +7,14 @@ geocodes them with Google's geocode API, and stores them in KML format.
 
 import sys
 import logging
-import string as strModule
+import string as strmodule
 from time import sleep
+import xlrd
 from geocode import geocode
 from dao import MSSQLDAO as DAO
 from kml import KML
 
-class CtkModel():
+class CtkModel(object):
     subscribers = []        
     def addsub(self, subs):
         self.subscribers.append(subs)
@@ -44,9 +45,9 @@ class CtkModel():
             
         return caddresses
 
-    def xlsimport(self):
-        #tkAskOpenFileName()
-        pass
+    def xlsparse(self,xls):
+        book = xlrd.open_workbook(xls)
+        print book
 
     def dbimport(self,sName,dbName,uName,uPass):      
         dao = DAO(sName,dbName,uName,uPass)

@@ -18,5 +18,5 @@ def geocode(address):
     coordstr = (0, 0)
     loc = root.find(".//location")
     if not loc is None:
-        coordstr = (loc[0].text, loc[1].text)
+        coordstr = (loc[1].text, loc[0].text)
     return coordstr
