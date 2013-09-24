@@ -10,6 +10,7 @@ import logging
 import string as strmodule
 from time import sleep
 import xlrd
+from collections import OrderedDict
 from geocode import geocode
 from dao import MSSQLDAO as DAO
 from kml import KML
@@ -45,9 +46,17 @@ class CtkModel(object):
             
         return caddresses
 
-    def xlsparse(self,xls):
-        book = xlrd.open_workbook(xls)
-        print book
+    def xlsparse(self,xls, sheet_index=0,header_row_index=0):
+        """
+        Open a sheet of a book, read in the specific row as a header,
+        and read in each column from that row down as data for that column.
+        """
+        data = {}
+        with xlrd.open_workbook(xls) as book:
+            sheet = book.sheet_by_index(sheet_index)
+        for index, cvalue in enumerate(sheet.row_values(header_row_index)):
+            data[cvalue] = sheet.col_values(index,header_row_index+1)
+        return data
 
     def dbimport(self,sName,dbName,uName,uPass):      
         dao = DAO(sName,dbName,uName,uPass)
@@ -55,8 +64,7 @@ class CtkModel(object):
             dao.query()
             dao.close()
         rdict = dao.get()
-        
-        self.geocode_cust_addresses(self.build_cust_addresses_dict(rdict))
+        return rdict
 
     def geocode_cust_addresses(self,caddresses):
         kml = KML()

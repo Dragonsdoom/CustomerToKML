@@ -33,16 +33,23 @@ class Controller(object):
     def import_database_data(self):
         """Import data from database connection in model."""
         self.view.hide()
-        self.model.dbimport(self.view.get_servername(),
+        data = self.model.dbimport(self.view.get_servername(),
                                       self.view.get_dbname(),
                                       self.view.get_username(),
                                       self.view.get_dbpassword())
+        caddresses = self.model.build_cust_addresses_dict(data)
+        self.model.geocode_cust_addresses(caddresses)
+        self.end()
 
     def import_excel_data(self):
         """Import data from Excel."""
         self.view.hide()
         xls = self.view.get_xlsfile()
-        self.model.xlsparse(xls)
+        data = self.model.xlsparse(xls)
+        caddresses = self.model.build_cust_addresses_dict(data)
+        self.model.geocode_cust_addresses(caddresses)
+        self.end()
+        
 
     def end(self):
         """End the program."""
