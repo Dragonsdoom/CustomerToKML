@@ -5,9 +5,7 @@ Connects to a data source containing addresses,
 geocodes them with Google's geocode API, and stores them in KML format.
 """
 
-import sys
 import logging
-import string as strmodule
 from time import sleep
 import xlrd
 from geocode import geocode
@@ -18,29 +16,31 @@ from kml import KML
 class CtkModel(object):
 
     """MVC Model for program."""
-    
+
     subscribers = []
 
-    def addsub(self, subs):
+    def addsub(self, sub):
         """Add subscriber - publisher/subscriber model"""
-        self.subscribers.append(subs)
+        self.subscribers.append(sub)
 
-    def removesub(self):
+    def removesub(self, sub):
         """Remove subscriber - publisher/subscriber model"""
-        self.subscribers.remove(subs)
+        self.subscribers.remove(sub)
 
     def notifysubswrite(self, data, extension, exten_desc):
         """Notify subscribers of write to file."""
-        for s in self.subscribers:
-            s.write(data, extension, exten_desc)
+        for sub in self.subscribers:
+            sub.write(data, extension, exten_desc)
 
-    def wait(self, seconds):
+    @staticmethod
+    def wait(seconds):
         """Avoid overflowing geocoder."""
         logging.info('Waiting to geocode next address (~' + str(seconds) +
                      's)..')
         sleep(seconds)
 
-    def build_cust_addresses_dict(self, addr_component_dict):
+    @staticmethod
+    def build_cust_addresses_dict(addr_component_dict):
         """Build a dict of customer keys and address values"""
         caddresses = {}
         for x in range(0, len(addr_component_dict['Name'])):
@@ -54,7 +54,8 @@ class CtkModel(object):
 
         return caddresses
 
-    def xlsparse(self, xls, sheet_index=0, header_row_index=0):
+    @staticmethod
+    def xlsparse(xls, sheet_index=0, header_row_index=0):
         """
         Open a sheet of a book, read in the specific row as a header,
         and read in each column from that row down as data for that column.
@@ -66,7 +67,8 @@ class CtkModel(object):
             data[cvalue] = sheet.col_values(index, header_row_index + 1)
         return data
 
-    def dbimport(self, sname, dbname, uname, upass):
+    @staticmethod
+    def dbimport(sname, dbname, uname, upass):
         """Import data from db using DAO"""
         dao = DAO(sname, dbname, uname, upass)
         if dao.connect():
@@ -80,11 +82,11 @@ class CtkModel(object):
         kml = KML()
         xmlroot = kml.xmlroot
         # geocode addresses
-        for k, v in caddresses.items():
+        for key, value in caddresses.items():
             logging.info('Geocoding address..')
-            gcaddr = geocode(v)
+            gcaddr = geocode(value)
             logging.info('Appending row to kml..')
-            xmlroot[0].append(kml.placemark(v, k, gcaddr))
+            xmlroot[0].append(kml.placemark(value, key, gcaddr))
             self.wait(10)
 
         self.notifysubswrite(
