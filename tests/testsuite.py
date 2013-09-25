@@ -1,3 +1,5 @@
+""" Create the entry point for testing framework."""
+
 import unittest as ut
 import dao_test
 import kml_test

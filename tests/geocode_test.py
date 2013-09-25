@@ -1,10 +1,11 @@
+""" Test suite for Geocoder."""
 import unittest as ut
 import geocode
 
 
 class TestGeocoder(ut.TestCase):
-    def setUp(self):
-        pass
+
+    """ Test the Geocoder code for expected behaviour."""
 
     def test_geocode_raises_attribute_error_when_passed_none(self):
         self.assertRaises(AttributeError, geocode.geocode, None)

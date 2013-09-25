@@ -1,11 +1,13 @@
+""" Test suite for KML."""
+
 import unittest as ut
 import kml
 from lxml import etree
 
 
 class TestKML(ut.TestCase):
-    def setUp(self):
-        pass
+
+    """ Test the KML code for expected behaviour."""
 
     def test_placemark_method_makes_proper_kml_placemark(self):
         expected = "<Placemark><name>customer</name><description>" \
