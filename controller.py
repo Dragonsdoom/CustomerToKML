@@ -2,7 +2,7 @@
 import sys
 import logging
 from datetime import date
-from tkview import Tkview as view
+from tkgenview import TkGenView as view
 
 
 class Controller(object):

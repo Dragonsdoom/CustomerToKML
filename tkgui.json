@@ -1,0 +1,80 @@
+{
+    "Label":[
+        {
+            "name":"sname_label",
+            "text":"Enter server name: ",
+            "column": 0,
+            "row": 0,
+            "padx":5
+        },
+        {
+            "name":"dbname_label",
+            "text":"Enter database name: ",
+            "column": 0,
+            "row": 2,
+            "padx":5
+        },
+        {
+            "name":"username_label",
+            "text":"Enter database user name: ",
+            "column": 0,
+            "row": 4,
+            "padx":5
+        },
+        {
+            "name":"dbpw_label",
+            "text":"Enter database password: ",
+            "column": 0,
+            "row": 6,
+            "padx":5
+        }
+    ],
+    "Entry":[
+        {
+            "name":"sname_entry",
+            "column": 0,
+            "row": 1,
+            "padx":5,
+            "pady":3
+        },
+        {
+            "name":"dbname_entry",
+            "column": 0,
+            "row": 3,
+            "padx":5,
+            "pady":3
+        },
+        {
+            "name":"username_entry",
+            "column": 0,
+            "row": 5,
+            "padx":5,
+            "pady":3
+        },
+        {
+            "name":"dbpw_entry",
+            "column": 0,
+            "row": 7,
+            "padx":5,
+            "pady":3
+        }
+    ],
+    "Button":[
+        {
+            "name":"dbimport_button",
+            "text":"Import From Database",
+            "column": 0,
+            "row": 9,
+            "padx":5,
+            "pady":3
+        },
+        {
+            "name":"xlsimport_button",
+            "text":"Import From Excel",
+            "column": 0,
+            "row": 10,
+            "padx":5,
+            "pady":3
+        }
+    ]
+}
