@@ -1,9 +1,4 @@
-"""
-Customer To KML
-Assembled by FAV on 08 06 13
-Connects to a data source containing addresses,
-geocodes them with Google's geocode API, and stores them in KML format.
-"""
+""" Model high-level logic for MVC pattern."""
 
 import logging
 from time import sleep

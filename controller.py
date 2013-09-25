@@ -2,7 +2,6 @@
 import sys
 import logging
 from datetime import date
-from customertokml import CtkModel as model
 from tkview import Tkview as view
 
 
@@ -59,12 +58,3 @@ class Controller(object):
         logging.shutdown()
         sys.exit()
 
-
-def main():
-    """Enter the program"""
-    ctr = Controller(model())
-    ctr.display()
-    ctr.end()
-
-if __name__ == "__main__":
-    main()
