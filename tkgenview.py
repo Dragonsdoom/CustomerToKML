@@ -10,7 +10,7 @@ class TkGenView(object):
     """Perform all tasks related to GUI."""
 
     def __init__(self, title, controller, model):
-        self.root = tkgen.gengui.TkJson('tkgui.json', title='tkjson')
+        self.root = tkgen.gengui.TkJson('tkgui.json', title=title)
         self.controller = controller
         self.model = model
         model.addsub(self)
