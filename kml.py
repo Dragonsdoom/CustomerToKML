@@ -4,7 +4,6 @@ from lxml import etree
 
 
 class KML(object):
-
     """Generate KML files."""
 
     def __init__(self):
@@ -41,3 +40,9 @@ class KML(object):
                               method="xml",
                               xml_declaration=True,
                               pretty_print=True)
+
+
+p = etree.tostring(
+    KML.placemark('customer', '910 Fake Address Way, West End, NC 28387',
+                  ('0', '0')))
+print p

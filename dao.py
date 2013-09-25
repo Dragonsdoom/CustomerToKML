@@ -134,4 +134,5 @@ class MSSQLDAO(DAO):
             self.connected = False
             return True
         else:
+            self.connected = False
             return False
