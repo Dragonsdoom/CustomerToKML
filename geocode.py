@@ -1,5 +1,4 @@
 """Geocode address provided."""
-import logging
 import urllib
 from lxml import etree
 

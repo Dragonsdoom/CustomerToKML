@@ -10,9 +10,9 @@ class Controller(object):
 
     """Handle logic calls between the view and the model."""
 
-    def __init__(self, model):
+    def __init__(self, newmodel):
         self.start_log()
-        self.model = model
+        self.model = newmodel
         self.view = view('Customer To KML', self, self.model)
         self.view.link(self.import_database_data, self.import_excel_data)
 
@@ -20,7 +20,8 @@ class Controller(object):
         """Display the GUI."""
         self.view.mainloop()
 
-    def start_log(self):
+    @staticmethod
+    def start_log():
         """
         Initialize the logging activity.
         """
@@ -51,7 +52,8 @@ class Controller(object):
         self.model.geocode_cust_addresses(caddresses)
         self.end()
 
-    def end(self):
+    @staticmethod
+    def end():
         """End the program."""
         logging.info('..Done')
         logging.shutdown()

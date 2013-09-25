@@ -84,7 +84,7 @@ class Tkview(object):
         """Write output to file."""
         logging.info('Requesting save location from user..')
         self.root.withdraw()  # hides the root window
-
+        filename = ''
         try:
             filename = asksaveasfile(parent=self.root,
                                      defaultextension=extension,

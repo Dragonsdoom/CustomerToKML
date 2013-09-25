@@ -18,8 +18,8 @@ class KML(object):
         xmlroot.append(doc)
         self.xmlroot = xmlroot
 
-    # builds a kml placemark and returns the node
-    def placemark(self, cname, address, gcode):
+    @staticmethod
+    def placemark(cname, address, gcode):
         """
         Build a placemark node structure for KML from params
         and return the node.
@@ -34,7 +34,8 @@ class KML(object):
         pmark[2][0].text = (str(gcode[0]) + ',' + str(gcode[1]))
         return pmark
 
-    def serialize(self, root):
+    @staticmethod
+    def serialize(root):
         """Serialize lxml into KML string."""
         logging.info('Serializing KML in memory..')
         try:

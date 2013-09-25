@@ -33,9 +33,8 @@ class DAO(object):
 
 
 class MSSQLDAO(DAO):
-
     """Implement mssql DAO."""
-    
+
     connected = False
     connection = None
     cursor = None
@@ -61,13 +60,13 @@ class MSSQLDAO(DAO):
         ,StateProvince.Name AS StateProvince
         FROM Titan.Titan.Address
         INNER JOIN Titan.Titan.Company
-			ON Titan.Titan.Company.DefaultAddressId=Titan.Titan.Address.AddressId
-		INNER JOIN Titan.Titan.StateProvince ON Address.StateProvinceId = StateProvince.StateProvinceId
-		INNER JOIN Titan.Titan.CountryRegion ON Address.CountryRegionId = CountryRegion.CountryRegionId
+            ON Titan.Titan.Company.DefaultAddressId=Titan.Titan.Address.AddressId
+        INNER JOIN Titan.Titan.StateProvince ON Address.StateProvinceId = StateProvince.StateProvinceId
+        INNER JOIN Titan.Titan.CountryRegion ON Address.CountryRegionId = CountryRegion.CountryRegionId
         WHERE Titan.Titan.Company.CompanyId IN (
-			SELECT Titan.Titan.Customer.CustomerId
-			FROM Titan.Titan.Customer
-			WHERE Titan.Titan.Customer.Active = 1)"""
+            SELECT Titan.Titan.Customer.CustomerId
+            FROM Titan.Titan.Customer
+            WHERE Titan.Titan.Customer.Active = 1)"""
 
     def connect(self):
         """Connect to data location."""
@@ -102,10 +101,10 @@ class MSSQLDAO(DAO):
             # get cols from cursor
             for x in range(0, len(self.cursor.description)):
                 cols.append(self.cursor.description[x][0])
-            # set up lists in result dict
+                # set up lists in result dict
             for col in cols:
                 self.results[col] = []
-            # add results to lists in dict by column
+                # add results to lists in dict by column
             for x in range(0, len(rows)):
                 for y in range(0, len(cols)):
                     self.results[cols[y]].append(rows[x][y])
