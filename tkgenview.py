@@ -21,8 +21,8 @@ class TkGenView(object):
 
     def link(self, import_dbcommand, import_xlscommand):
         """Link commands to buttons from controller."""
-        self.root.button('dbimport_button',import_dbcommand)
-        self.root.button('xlsimport_button',import_xlscommand)
+        self.root.button('dbimport_button', import_dbcommand)
+        self.root.button('xlsimport_button', import_xlscommand)
 
     def hide(self):
         """Hide GUI window."""
