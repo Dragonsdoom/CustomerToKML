@@ -1,5 +1,4 @@
 """Generate KML files."""
-import sys
 import logging
 from lxml import etree
 
@@ -38,11 +37,7 @@ class KML(object):
     def serialize(root):
         """Serialize lxml into KML string."""
         logging.info('Serializing KML in memory..')
-        try:
-            return etree.tostring(root, encoding="UTF-8",
-                                  method="xml",
-                                  xml_declaration=True,
-                                  pretty_print=True)
-        except Exception as err:
-            logging.warning("Error while serializing addresses: " + str(err))
-            sys.exit()
+        return etree.tostring(root, encoding="UTF-8",
+                              method="xml",
+                              xml_declaration=True,
+                              pretty_print=True)

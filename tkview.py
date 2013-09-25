@@ -9,7 +9,7 @@ from tkFileDialog import asksaveasfile, askopenfilename
 class Tkview(object):
 
     """Perform all tasks related to GUI."""
-    
+
     root = tk.Tk()
 
     def __init__(self, title, controller, model):
@@ -21,55 +21,50 @@ class Tkview(object):
         self.root.title(title)
         self.root.lift()
 
-        servername_label = ttk.Label(self.root, text="Enter server name: ")
-        servername_label.grid(row=0, column=0,
-                              sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
-        servername_entry = ttk.Entry(self.root)
-        servername_entry.grid(row=1, column=0,
-                              sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
-        servername_entry.focus()
+        self.servername_label = ttk.Label(self.root, text="Enter server name: ")
+        self.servername_label.grid(row=0, column=0,
+                                   sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
+        self.servername_entry = ttk.Entry(self.root)
+        self.servername_entry.grid(row=1, column=0,
+                                   sticky=tk.W + tk.E + tk.N + tk.S,
+                                   padx=5, pady=3)
+        self.servername_entry.focus()
 
-        dbname_label = ttk.Label(self.root, text="Enter database name: ")
-        dbname_label.grid(row=3, column=0,
-                          sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
-        dbname_entry = ttk.Entry(self.root)
-        dbname_entry.grid(row=4, column=0,
-                          sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
+        self.dbname_label = ttk.Label(self.root, text="Enter database name: ")
+        self.dbname_label.grid(row=3, column=0,
+                               sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
+        self.dbname_entry = ttk.Entry(self.root)
+        self.dbname_entry.grid(row=4, column=0,
+                               sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
 
-        username_label = ttk.Label(
+        self.username_label = ttk.Label(
             self.root, text="Enter database user name: ")
-        username_label.grid(row=5, column=0,
-                            sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
-        username_entry = ttk.Entry(self.root)
-        username_entry.grid(row=6, column=0,
-                            sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
+        self.username_label.grid(row=5, column=0,
+                                 sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
+        self.username_entry = ttk.Entry(self.root)
+        self.username_entry.grid(row=6, column=0,
+                                 sticky=tk.W + tk.E + tk.N + tk.S,
+                                 padx=5, pady=3)
 
-        dbpw_label = ttk.Label(self.root, text="Enter database password: ")
-        dbpw_label.grid(row=7, column=0,
-                        sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
-        dbpw_entry = ttk.Entry(self.root, show='*')
-        dbpw_entry.grid(row=8, column=0,
-                        sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
-
-        dbimport_button = ttk.Button(self.root,
-                                     text="Import From Database", command=None)
-        dbimport_button.grid(row=9, column=0,
+        self.dbpw_label = ttk.Label(self.root, text="Enter database password: ")
+        self.dbpw_label.grid(row=7, column=0,
+                             sticky=tk.W + tk.E + tk.N + tk.S, padx=5)
+        self.dbpw_entry = ttk.Entry(self.root, show='*')
+        self.dbpw_entry.grid(row=8, column=0,
                              sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
-        xlsimport_button = ttk.Button(self.root,
-                                      text="Import From Excel", command=None)
-        xlsimport_button.grid(row=10, column=0,
-                              sticky=tk.W + tk.E + tk.N + tk.S, padx=5, pady=3)
 
-        self.servername_label = servername_label
-        self.servername_entry = servername_entry
-        self.username_label = username_label
-        self.username_entry = username_entry
-        self.dbname_label = dbname_label
-        self.dbname_entry = dbname_entry
-        self.dbpw_label = dbpw_label
-        self.dbpw_entry = dbpw_entry
-        self.dbimport_button = dbimport_button
-        self.xlsimport_button = xlsimport_button
+        self.dbimport_button = ttk.Button(self.root,
+                                          text="Import From Database",
+                                          command=None)
+        self.dbimport_button.grid(row=9, column=0,
+                                  sticky=tk.W + tk.E + tk.N + tk.S,
+                                  padx=5, pady=3)
+        self.xlsimport_button = ttk.Button(self.root,
+                                           text="Import From Excel",
+                                           command=None)
+        self.xlsimport_button.grid(row=10, column=0,
+                                   sticky=tk.W + tk.E + tk.N + tk.S,
+                                   padx=5, pady=3)
 
     def link(self, import_dbcommand, import_xlscommand):
         """Link commands to buttons from controller."""
@@ -84,7 +79,7 @@ class Tkview(object):
         """Write output to file."""
         logging.info('Requesting save location from user..')
         self.root.withdraw()  # hides the root window
-        filename = ''
+        filename = None
         try:
             filename = asksaveasfile(parent=self.root,
                                      defaultextension=extension,

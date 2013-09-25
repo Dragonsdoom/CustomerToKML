@@ -76,7 +76,7 @@ class MSSQLDAO(DAO):
             logging.info('Opening connection to database..')
             try:
                 self.connection = pyodbc.connect(self.connstr)
-            except Exception as err:
+            except pyodbc.DatabaseError as err:
                 logging.warning(
                     "Error while connecting to database: " + str(err))
                 sys.exit()
@@ -93,7 +93,10 @@ class MSSQLDAO(DAO):
             logging.info('Executing query..')
             try:
                 self.cursor.execute(self.statement)
-            except Exception as err:
+            except pyodbc.DataError as err:
+                logging.warning("Error while querying database: " + str(err))
+                sys.exit()
+            except pyodbc.ProgrammingError as err:
                 logging.warning("Error while querying database: " + str(err))
                 sys.exit()
             rows = self.cursor.fetchall()
@@ -125,7 +128,7 @@ class MSSQLDAO(DAO):
             logging.info('Closing connection to database..')
             try:
                 self.connection.close()
-            except Exception as err:
+            except pyodbc.DatabaseError as err:
                 logging.warning("Error while writing to file: " + str(err))
                 sys.exit()
             self.connected = False
