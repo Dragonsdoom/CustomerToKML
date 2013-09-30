@@ -81,7 +81,7 @@ class CtkModel(object):
             logging.info('Geocoding address..')
             gcaddr = geocode(value)
             logging.info('Appending row to kml..')
-            xmlroot[0].append(kml.placemark(value, key, gcaddr))
+            xmlroot[0].append(kml.placemark(key, value, gcaddr))
             self.wait(10)
 
         self.notifysubswrite(
